@@ -9,13 +9,13 @@ public class GsonProjectArray {
 
     ArrayList<GsonProject> records;
 
+    public ArrayList<GsonProject> getRecords() {
+        return records;
+    }
 
     public int getCount(){
         return records.size();
     }
 
-    public String getSecondDescription(){
-        return records.get(1).description;
-    }
 
 }

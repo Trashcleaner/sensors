@@ -1,6 +1,7 @@
 package com.redcute.fetchsensorsdata;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +35,16 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "MainActivity";
+    final public static String PROJECT_DATA_ARRAY = "ArrayOfGsonProjectObjects";
+    final public static String DEVICE_DATA_ARRAY = "ArrayOfGsonDeviceObjects";
+    final public static String MESSAGE_DATA_ARRAY = "ArrayOfGsonmessageObjects";
+
+
+
+    final public static String TASK_PROJECT = "project";
+    final public static String TASK_DEVICE = "device";
+    final public static String TASK_MESSAGE = "message";
+
 
     private TextView mainText;
 
@@ -50,13 +62,22 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Snackbar.make(view, "I am here just for fun", Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+        Button button = (Button) findViewById(R.id.button);
+        assert button != null;
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 String stringUrl = "https://api.pripoj.me/project/get/?token=7TOEYELOrQpsJRhVQLRtnCaheigkWmX2";
                 ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
                 if (networkInfo != null && networkInfo.isConnected()) {
-                    new FetchProjectsData().execute(stringUrl);
+                    new FetchDataTask(getApplication(), MainActivity.TASK_PROJECT).execute(stringUrl);
                 } else {
-                    Snackbar.make(view, "Unable to connect", Snackbar.LENGTH_LONG)
+                    Snackbar.make(v, "Unable to connect", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
             }
@@ -111,9 +132,12 @@ public class MainActivity extends AppCompatActivity {
             GsonMetaData gsonMetaData = gson.fromJson(s, GsonMetaData.class);
             if("SUCCESS".equals(gsonMetaData.getStatus())) {
                 //mainText.setText(gsonMetaData.getStatus());
-                int count = gsonMetaData.getCount();
-                GsonProjectArray gsonProjectArray = gson.fromJson(s, GsonProjectArray.class);
                 Toast.makeText(getApplicationContext(), "Fetch successful", Toast.LENGTH_LONG).show();
+                GsonProjectArray gsonProjectArrayObject = gson.fromJson(s, GsonProjectArray.class);
+                ArrayList<GsonProject> gsonProjectArray = gsonProjectArrayObject.getRecords();
+                Intent intent = new Intent(getBaseContext(), ProjectActivity.class);
+                intent.putParcelableArrayListExtra(MainActivity.PROJECT_DATA_ARRAY, gsonProjectArray);
+                startActivity(intent);
 
             }else{
                 Toast.makeText(getApplicationContext(), gsonMetaData.getStatus(), Toast.LENGTH_LONG).show();
